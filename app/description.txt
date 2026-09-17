@@ -1,0 +1,151 @@
+===========================================================================
+KING CAKE FINDER — GOOGLE PLAY STORE LISTING CONTENT
+===========================================================================
+Package name: com.kingcakefinder.app
+Everything below is ready to paste into Play Console → Store presence →
+Main store listing. Character counts are noted so you can confirm they fit
+Google's limits.
+
+
+---------------------------------------------------------------------------
+APP NAME  (max 30 characters)
+---------------------------------------------------------------------------
+King Cake Finder
+(17 characters)
+
+
+---------------------------------------------------------------------------
+SHORT DESCRIPTION  (max 80 characters)
+---------------------------------------------------------------------------
+Find, rate, and review king cake bakeries near you this Mardi Gras season.
+(76 characters)
+
+
+---------------------------------------------------------------------------
+FULL DESCRIPTION  (max 4000 characters)
+---------------------------------------------------------------------------
+King Cake Finder helps you discover the best king cakes for Mardi Gras and
+Carnival season — from neighborhood home bakers to established
+brick-and-mortar bakeries. Browse listings, compare prices, see what's
+nearby, and read honest reviews from other king cake lovers before you buy.
+
+WHAT YOU CAN DO
+• Browse bakeries by name, city, or flavor, and filter by what matters to
+  you — home bakery vs. brick-and-mortar, shipping available, and more.
+• See every bakery on an interactive map, with your distance and estimated
+  travel time to each one.
+• Read pricing and variations for each bakery's king cakes before you go.
+• Rate and review bakeries with a simple king-cake rating — one honest
+  review per bakery, per person.
+• Save your favorite bakeries so they're a tap away next time.
+• Keep a "To Be Tasted" wishlist of bakeries you want to try next — separate
+  from your favorites, so you always know where to go next.
+• Get directions in one tap via Apple Maps or Google Maps, or call a bakery
+  directly from its listing.
+• Browse as a guest with no account required — sign up only when you want
+  to save favorites, leave a review, or message support.
+
+SAFETY, FIRST
+Every bakery page includes a food-safety reminder before you order —
+covering the traditional hidden baby/trinket choking hazard, potential
+allergens, and a reminder that listings are user- and owner-submitted, not
+independently verified. Reviews are auto-moderated for inappropriate
+content, and you can report a review or block a user at any time. Our team
+reviews reports and can remove content that violates our guidelines.
+
+YOUR ACCOUNT, YOUR CONTROL
+Create a free account to save favorites, build your to-be-tasted list, and
+leave reviews — or skip it and just browse. You can request account
+deletion at any time right from the app (Settings → Account → Delete
+account), which removes your reviews, favorites, and profile data.
+
+King Cake Finder shares the same account and bakery data as our companion
+website, so your favorites and reviews stay in sync wherever you use it.
+
+Whether you're a lifelong New Orleanian or new to the Mardi Gras tradition,
+King Cake Finder makes it easy to find your next king cake — and remember
+the ones you loved.
+(1,819 characters)
+
+
+---------------------------------------------------------------------------
+CATEGORY
+---------------------------------------------------------------------------
+Suggested: Food & Drink
+(Alternative: Lifestyle — if Food & Drink doesn't fit your account's
+available category list)
+
+
+---------------------------------------------------------------------------
+TAGS / KEYWORDS  (for your own reference — Play Console infers search terms
+from your listing text, there's no separate keyword field like Apple's)
+---------------------------------------------------------------------------
+king cake, mardi gras, carnival, new orleans, bakery finder, bakery reviews,
+king cake tracker, louisiana food, bakery near me, mardi gras food
+
+
+---------------------------------------------------------------------------
+CONTAINS ADS
+---------------------------------------------------------------------------
+Answer: YES
+Why: the app shows sponsored placements (a "Sponsored by" banner plus up to
+5 admin-marked sponsored bakery listings surfaced on Home). Google Play
+counts sponsored/promotional content as ads even though there is no ad SDK
+and no ad tracking in the app.
+
+
+---------------------------------------------------------------------------
+DATA SAFETY FORM — quick reference
+---------------------------------------------------------------------------
+Data collected: email address, name, user-generated reviews, location
+(optional, for distance sorting), user ID.
+Encryption: data is encrypted in transit (standard HTTPS/TLS via Firebase).
+Data deletion: users can request account deletion in-app (Settings →
+  Account → Delete account) or on the website (Account page).
+Data sharing: not sold or shared with third parties.
+
+
+---------------------------------------------------------------------------
+CONTENT RATING (IARC questionnaire)
+---------------------------------------------------------------------------
+Expect: Everyone / PEGI 3-equivalent. Flag "user-generated content" (UGC)
+since the app has reviews — this is expected and doesn't by itself raise
+the rating, provided moderation is in place (it is: auto-moderation,
+report, block-user, and admin removal are all implemented).
+
+
+---------------------------------------------------------------------------
+PRIVACY POLICY URL  (required)
+---------------------------------------------------------------------------
+https://king-cake-app.web.app/privacy
+
+
+---------------------------------------------------------------------------
+SUPPORT
+---------------------------------------------------------------------------
+Support email: Kingcakeknives@gmail.com
+Support/website URL: https://king-cake-app.web.app
+
+
+---------------------------------------------------------------------------
+APP ACCESS (for reviewer login)
+---------------------------------------------------------------------------
+The app requires an account for some features (reviews, favorites, to-be-
+tasted, inbox). Provide Google reviewers a test account:
+  Email:    test@gmail.com
+  Password: 123456
+(Create this account in the live app before submitting — see HANDOFF.md
+Section 6/7 for Apple's equivalent requirement, which uses the same
+account.)
+
+
+---------------------------------------------------------------------------
+GRAPHIC ASSETS STILL NEEDED
+---------------------------------------------------------------------------
+• App icon — already in assets/icon.png (1024x1024, no alpha channel).
+• Feature graphic — 1024 x 500 px, no text overlay recommended by Google.
+• Phone screenshots — capture from the running app (Home, Search, Bakery
+  detail with map, Reviews). At least 2 required, 8 max.
+• 7" and 10" tablet screenshots — optional but recommended if the layout
+  supports tablets.
+===========================================================================

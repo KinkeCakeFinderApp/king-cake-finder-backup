@@ -1,0 +1,205 @@
+rules_version = '2';
+
+// ---------------------------------------------------------------------------
+// King Cake Finder — Firestore security rules
+//
+// Principle: deny by default; grant the minimum. A normal user can only touch
+// their own profile, their own reviews, and their own inbox. Superusers manage
+// bakeries and moderate content, but cannot alter other users' accounts.
+// ---------------------------------------------------------------------------
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Reads the requester's own profile to check their role.
+    function isSuperuser() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'superuser';
+    }
+
+    // ---- Users -----------------------------------------------------------
+    // A user can read/write ONLY their own profile document, and can never
+    // change their own role.
+    match /users/{userId} {
+      allow read: if isSignedIn() && request.auth.uid == userId;
+
+      // Self-serve signups may ONLY create a normal account. Superusers are
+      // provisioned by hand in the Firebase console (edit the user doc and set
+      // role: "superuser"). This makes it impossible for a client to grant
+      // itself admin, even if someone inspects the app.
+      allow create: if isSignedIn()
+        && request.auth.uid == userId
+        && request.resource.data.role == 'user';
+
+      // Updates may never change the role (prevents self-escalation).
+      allow update: if isSignedIn()
+        && request.auth.uid == userId
+        && request.resource.data.role == resource.data.role;
+
+      // A user may delete only their own profile (account deletion).
+      allow delete: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    // ---- Bakeries --------------------------------------------------------
+    // PUBLIC read: anyone (even signed-out visitors on the website) can browse
+    // bakeries so they can see ratings and reviews and decide where to go.
+    // Only superusers create/delete or edit real fields — BUT any signed-in
+    // user may update just the denormalized rating summary
+    // (avgRating/ratingCount), which the review transaction writes when a normal
+    // user posts or edits a review. (No Cloud Functions on Spark to recompute
+    // server-side, so values are client-trusted but bounded here.)
+    match /bakeries/{bakeryId} {
+      allow read: if true;
+      allow create, delete: if isSuperuser();
+      allow update: if isSuperuser() || (
+        isSignedIn()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['avgRating', 'ratingCount'])
+        && request.resource.data.avgRating is number
+        && request.resource.data.avgRating >= 0
+        && request.resource.data.avgRating <= 5
+        && request.resource.data.ratingCount is number
+        && request.resource.data.ratingCount >= 0
+      );
+
+      // ---- Reviews (keyed by uid = one review per user) ------------------
+      match /reviews/{reviewUid} {
+        // PUBLIC read of PUBLISHED reviews so everyone can read them and decide
+        // where to go. A moderated/pending review stays private to its author
+        // (and superusers). resource == null keeps first-review transaction gets
+        // working.
+        allow read: if resource == null
+          || resource.data.status == 'published'
+          || (isSignedIn() && resource.data.authorUid == request.auth.uid)
+          || isSuperuser();
+
+        // A user may only write their OWN review (doc id == their uid), with a
+        // valid 1–5 rating and <=500 char body. Superusers may edit any review
+        // (used when approving/cleaning moderated content).
+        allow create, update: if isSuperuser() || (
+          isSignedIn()
+          && reviewUid == request.auth.uid
+          && request.resource.data.authorUid == request.auth.uid
+          && request.resource.data.rating is number
+          && request.resource.data.rating >= 1
+          && request.resource.data.rating <= 5
+          && request.resource.data.text is string
+          && request.resource.data.text.size() <= 500
+        );
+
+        // A user can delete their own review; superusers can remove any.
+        allow delete: if isSignedIn()
+          && (reviewUid == request.auth.uid || isSuperuser());
+      }
+    }
+
+    // ---- Moderation queue ------------------------------------------------
+    // Only superusers can READ the queue and resolve entries. Signed-in users
+    // may CREATE entries in two narrow cases: flagging their own auto-moderated
+    // review, or reporting someone else's review. A reviewed author can never
+    // delete or resolve a report filed against them.
+    match /moderationQueue/{id} {
+      allow read: if isSuperuser();
+
+      allow create: if isSignedIn()
+        && request.resource.data.resolved == false
+        && (
+          request.resource.data.authorUid == request.auth.uid   // self auto-flag
+          || request.resource.data.reportedBy == request.auth.uid // user report
+        );
+
+      allow update: if isSuperuser() || (
+        // The author re-submitting their own (self-flagged, non-report) review.
+        isSignedIn()
+        && !('reportedBy' in resource.data)
+        && resource.data.authorUid == request.auth.uid
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.resolved == false
+      ) || (
+        // Another user re-reporting the same review (keeps it unresolved).
+        isSignedIn()
+        && request.resource.data.reportedBy == request.auth.uid
+        && request.resource.data.authorUid == resource.data.authorUid
+        && request.resource.data.resolved == false
+      );
+
+      // Only the self-flag author (non-report doc) or a superuser may delete.
+      allow delete: if isSuperuser() || (
+        isSignedIn()
+        && !('reportedBy' in resource.data)
+        && resource.data.authorUid == request.auth.uid
+      );
+    }
+
+    // ---- Messages / inbox ------------------------------------------------
+    // A user reads/updates/deletes only their own inbox items. Only a superuser
+    // may write a message INTO another user's inbox (moderation DMs).
+    match /messages/{userId}/items/{itemId} {
+      allow read: if isSignedIn() && request.auth.uid == userId;
+
+      allow create: if isSuperuser()
+        && request.resource.data.ownerUid == userId;
+
+      // The owner may mark a message read.
+      allow update: if isSignedIn() && request.auth.uid == userId;
+
+      // The owner may delete their own items (account deletion cleanup).
+      allow delete: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    // ---- Support tickets -------------------------------------------------
+    // A user files their own support request; only superusers work the queue.
+    // Replies go back to the user's inbox via messages (superuser-authored).
+    match /supportTickets/{id} {
+      allow read: if isSuperuser()
+        || (isSignedIn() && resource.data.fromUid == request.auth.uid);
+
+      allow create: if isSignedIn()
+        && request.resource.data.fromUid == request.auth.uid
+        && request.resource.data.resolved == false;
+
+      // Only superusers can resolve/edit tickets.
+      allow update: if isSuperuser();
+
+      // Superusers can remove any ticket; a user may delete their own (needed so
+      // account deletion can remove the email stored on their tickets).
+      allow delete: if isSuperuser()
+        || (isSignedIn() && resource.data.fromUid == request.auth.uid);
+    }
+
+    // ---- Analytics (public click counters) ---------------------------------
+    // The "Sponsored by kingcakeknives.com" banner is shown to everyone,
+    // including signed-out guests, so tracking its clicks can't require auth.
+    // This rule allows ONLY a strict +1 on the "count" field — nothing else
+    // about the document can change, and no other field can exist. Worst-case
+    // abuse is an inflated number, not a real security issue.
+    match /analytics/sponsorLinkClicks {
+      allow read: if isSuperuser();
+      allow write: if
+        (resource == null
+          && request.resource.data.count == 1
+          && request.resource.data.keys().hasOnly(['count']))
+        || (resource != null
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['count'])
+          && request.resource.data.count == resource.data.count + 1);
+    }
+
+    // ---- Config (push notification routing) -------------------------------
+    // Holds admin push tokens so a reporting/support-filing user's own client
+    // can notify the admin directly, without needing to read another user's
+    // profile (which stays fully private). Any signed-in user may READ this
+    // (it's just device tokens, not personal data) so they can push to the
+    // admin after creating a report or support ticket; only a superuser may
+    // write it (their own device registering/updating its token).
+    match /config/{document} {
+      allow read: if isSignedIn();
+      allow write: if isSuperuser();
+    }
+
+    // Everything else is denied by default.
+  }
+}

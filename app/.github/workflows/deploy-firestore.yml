@@ -1,0 +1,39 @@
+name: Deploy Firestore rules & indexes
+
+# Deploys firestore.rules and firestore.indexes.json to Firebase.
+# Runs automatically when those files change, and can be run on demand from the
+# GitHub "Actions" tab (Run workflow). Requires one repository secret:
+#   FIREBASE_SERVICE_ACCOUNT  — the JSON key for your Firebase service account.
+
+on:
+  push:
+    branches: ['**']
+    paths:
+      - 'firestore.rules'
+      - 'firestore.indexes.json'
+      - 'firebase.json'
+      - '.github/workflows/deploy-firestore.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Write service account credentials
+        run: printf '%s' '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}' > "${{ runner.temp }}/firebase-key.json"
+
+      - name: Deploy rules & indexes
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-key.json
+        run: firebase deploy --only firestore:rules,firestore:indexes --project king-cake-app --non-interactive

@@ -1,0 +1,6 @@
+name = "king-cake-recaptcha-verify"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+
+# RECAPTCHA_SECRET is set separately as a secret (never committed):
+#   npx wrangler secret put RECAPTCHA_SECRET

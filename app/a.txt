@@ -1,0 +1,248 @@
+===========================================================================
+KING CAKE FINDER — YOUR TO-DO LIST
+(the contact-support fix + everything needed for Apple & Google)
+Work top to bottom. Sections 0-2 fix "contact support". Sections 3+ are for
+publishing to the App Store / Play Store.
+===========================================================================
+
+
+===========================================================================
+SECTION 0 — WHY "CONTACT SUPPORT / CONTACT ADMIN" WASN'T WORKING
+===========================================================================
+There were TWO separate causes:
+
+1) SENDING a support message needs the Firestore security rules for the
+   "supportTickets" collection to be live. If your deployed rules don't
+   include that block, sending fails with "permission denied".
+   FIX = re-deploy the rules (SECTION 2).
+
+2) The admin "Support requests" list (and the Moderation queue) used a
+   database query that needed a special "composite index" you never
+   deployed, so the lists came back empty / errored. I changed the code so
+   it no longer needs any special index.
+   FIX = get the latest code and rebuild (SECTION 1).
+
+Do SECTION 1 + SECTION 2 and contact support works end-to-end.
+
+Is contact-support OK for the app stores? YES. An in-app support/contact
+form is allowed and even encouraged. Both stores also want a "support URL"
+in the listing — use your website (SECTION 5).
+
+
+===========================================================================
+SECTION 1 — GET THE LATEST CODE + REBUILD  (commands)
+===========================================================================
+If Node says "command not found", first run:
+    export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+
+--- APP  (GitHub branch:  claude/new-session-jm9m0q) ---
+Download that branch's ZIP from GitHub, unzip it, then:
+    cd ~/King-cake-tracker-app-claude-new-session-jm9m0q
+    npm install
+    npx expo start --tunnel -c         # test in Expo Go (scan the QR)
+
+To build the installable Android APK (for testers):
+    npm install -g eas-cli
+    eas login                          # free account at expo.dev
+    eas build:configure                # say YES to generating a keystore
+    eas build --platform android --profile preview
+
+To build for APPLE / iOS (no Mac needed — EAS builds in the cloud):
+    npm install -g eas-cli
+    eas login                          # free account at expo.dev
+    eas build:configure                # if you haven't already
+    eas build --platform ios --profile production
+  During this build EAS will ask to log in with your Apple ID and will
+  create the signing certificate + provisioning profile for you (say YES).
+  You MUST have enrolled in the Apple Developer Program first (SECTION 3).
+  Full step-by-step for Apple is in SECTION 3.
+
+--- WEBSITE  (GitHub branch:  website) ---
+Download the website branch ZIP, unzip it, then:
+    cd ~/King-cake-tracker-app-website
+    npm install
+    npm run build
+    firebase deploy --only hosting
+
+
+===========================================================================
+SECTION 2 — DEPLOY THE FIRESTORE RULES  (required for contact support)
+===========================================================================
+1. Open the file  firestore.rules  in the APP project folder.
+2. Select ALL of it and copy.
+3. Firebase console -> Firestore Database -> Rules tab.
+4. Delete what's there, paste the copied rules, click PUBLISH.
+
+That deployed rules file already includes the supportTickets rules, the
+public-read reviews, and the "normal users can post reviews" fix.
+
+NOTE: you do NOT need to deploy indexes anymore — the code was changed to
+avoid composite indexes entirely.
+
+
+===========================================================================
+SECTION 2b — HOW TO MAKE YOURSELF (OR SOMEONE) AN ADMIN
+===========================================================================
+For security, the app can NO LONGER create admins — anyone who inspected the
+app used to be able to make themselves an admin, so that was removed. Admins
+are now made by hand in the Firebase console:
+
+  1. Have the person sign up a normal account in the app/website first.
+  2. Firebase console -> Firestore Database -> Data.
+  3. Open the "users" collection and find their document (the id is their
+     account's UID; the doc shows their username/email).
+  4. Click the "role" field, change its value from  user  to  superuser,
+     and save.
+  5. They may need to sign out and back in. The Admin tab now appears for them.
+
+To REMOVE an admin, set the same field back to  user .
+
+
+===========================================================================
+SECTION 3 — APPLE APP STORE — EVERYTHING NEEDED
+===========================================================================
+COST: Apple Developer Program = $99/YEAR (developer.apple.com/programs).
+      Enrollment can take 1-2 days.
+
+BUILD & UPLOAD THE iOS APP (do this AFTER you've enrolled in the Apple
+Developer Program above — you do NOT need a Mac; EAS builds in the cloud):
+    npm install -g eas-cli
+    eas login                          # free account at expo.dev
+    eas build:configure                # once per project (say YES)
+    eas build --platform ios --profile production
+  - When prompted, log in with your Apple ID and let EAS create the
+    Distribution certificate + provisioning profile for you (answer YES).
+  - The build runs on Expo's servers and gives you a link to a .ipa when done.
+  Then upload the finished build to App Store Connect:
+    eas submit --platform ios --latest
+  (Alternatively, download the .ipa and upload it with Apple's free
+   "Transporter" app from the Mac App Store — but eas submit is easier.)
+  After it uploads, the build appears in App Store Connect under your app's
+  "TestFlight"/"Build" section; attach it to your version and submit for review.
+
+ALREADY DONE IN THE APP (Apple requires these):
+  [x] In-app ACCOUNT DELETION (Settings -> Delete account) — REQUIRED by
+      Apple for any app with sign-up.
+  [x] User-generated-content safety (Apple Guideline 1.2):
+        - auto-moderation filter keeps reviews PG
+        - users can REPORT a review
+        - users can BLOCK another user (their reviews are hidden; unblock in
+          Settings)
+        - a Terms of Service with a zero-tolerance clause, which users must
+          agree to at login/signup
+        - admins can REMOVE any review
+        - moderation queue + message the author
+  [x] Location permission has a clear purpose string.
+  [x] Encryption export flag set (ITSAppUsesNonExemptEncryption = false).
+  [x] Real app icon, no placeholder content.
+  [x] Login is email/password (first-party) only, so "Sign in with Apple"
+      is NOT required.
+  [x] GUEST BROWSING (Apple Guideline 5.1.1(v)): visitors can browse bakeries,
+      ratings, and reviews WITHOUT an account. An account is only asked for
+      when they try to review, favorite, use their inbox/history, or contact
+      support. This is the big rejection-risk fix — see below.
+
+YOU STILL NEED TO DO (in App Store Connect, appstoreconnect.apple.com):
+  1. Create the app record. Bundle ID:  com.kingcakefinder.app
+  2. Privacy Policy URL (REQUIRED):
+        https://king-cake-app.web.app/privacy
+     (deploy the website first — SECTION 1 — so this link is live)
+  3. App Privacy "nutrition label" — declare data collected:
+        - Contact Info: email address, name
+        - User Content: reviews
+        - Location: precise/coarse (used for distance)
+        - Identifiers: user ID
+     Tracking? NO. The app shows sponsored placements (a "Sponsored by"
+     banner + sponsored bakery slots) but uses NO ad SDK, NO third-party ad
+     network, and NO tracking — so App Tracking Transparency is not required
+     and the nutrition label "Tracking" answer stays NO.
+  4. App Review demo account: because the app needs a login, add a TEST
+     account (email + password) under "App Review Information" so the
+     reviewer can sign in. (Make a normal account and give those creds.)
+  5. Screenshots — at least iPhone 6.7" and 6.5" sizes (take them from the
+     running app).
+  6. Age rating questionnaire.
+  7. Support URL + Marketing URL (use your website).
+  8. Description, keywords, category = Food & Drink.
+
+APPLE REVIEW RISK — RESOLVED:
+  Guideline 5.1.1(v): Apple often rejects apps that FORCE a login just to
+  browse. This is now HANDLED — the welcome screen has a "Browse without an
+  account" option, and the whole app (Search, bakery pages, ratings, reviews,
+  sponsored list) works signed-out. Sign-in is only requested at the point a
+  visitor tries an account action (write/report a review, save a favorite,
+  open their inbox/history, or contact support). No demo account is strictly
+  required for browsing now, but STILL PROVIDE a test account (see below) so
+  the reviewer can exercise the account features too.
+
+
+===========================================================================
+SECTION 4 — GOOGLE PLAY — EVERYTHING NEEDED
+===========================================================================
+COST: Google Play Developer = $25 ONE-TIME (play.google.com/console).
+
+BUILD FOR THE STORE (Play needs an .aab, not the .apk):
+    eas build --platform android --profile production
+Then upload it to Play (after you've created the app record in Play Console):
+    eas submit --platform android --latest
+  (Or download the .aab and upload it manually in Play Console ->
+   Production -> Create new release.)
+
+YOU STILL NEED TO DO (in Play Console):
+  1. Create the app. Package name:  com.kingcakefinder.app
+  2. Privacy Policy URL (REQUIRED):
+        https://king-cake-app.web.app/privacy
+  3. Data safety form — declare you collect: email, name, reviews,
+     location, user ID; encrypted in transit; users can request deletion.
+     Account deletion info to give Google:
+        - In-app: Settings -> Delete account
+        - Web URL: https://king-cake-app.web.app/account
+  4. Content rating questionnaire (IARC).
+  5. Target audience & content.
+  6. App access: the app requires login -> provide a TEST account
+     (email + password) so Google reviewers can sign in.
+  7. "Does your app contain ads?" -> YES. The app shows sponsored placements
+     (a "Sponsored by" banner + sponsored bakery slots). Google Play counts
+     sponsored/promotional content as ads, so declare "Contains ads: Yes".
+     (There is still no ad SDK and no ad tracking — but the answer is YES.)
+  8. Store listing: short + full description, screenshots, feature graphic
+     (1024x500), app icon.
+  9. UGC: Play requires moderation + reporting for user content — you have
+     auto-moderation, report, block-user, and admin removal (mention it in the
+     content/policy sections).
+
+
+===========================================================================
+SECTION 5 — COMMON TO BOTH STORES
+===========================================================================
+  - PRIVACY POLICY must be LIVE at a public URL. Deploy the website first
+    (SECTION 1); then https://king-cake-app.web.app/privacy works for both
+    stores.
+  - DEMO/TEST ACCOUNT for reviewers (both stores) because login is required.
+    Just sign up a normal account and hand over the email + password.
+  - SUPPORT URL for the listings: your website home (or /privacy).
+  - ACCOUNT DELETION: in-app (done) + website Account page as the web
+    "delete my data" link.
+  - SCREENSHOTS: capture from the running app.
+
+
+===========================================================================
+SECTION 6 — RECOMMENDED BEFORE A REAL PUBLIC LAUNCH (optional)
+===========================================================================
+  - reCAPTCHA: DONE — your real v2 Checkbox key is in place (app + website).
+    Just make sure king-cake-app.web.app (and localhost for local testing) are
+    listed under the key's Domains in the reCAPTCHA admin console.
+  - Admin accounts: DONE — the insecure in-app admin passphrase was removed.
+    Make admins in the Firebase console instead (see SECTION 2b).
+  - AdSense (website): you've added the loader + ad slot 5785421511. Submit
+    your site for review in AdSense -> Sites. Ads stay blank until Google
+    approves your site (can take a few days) — that's normal, not a bug.
+
+===========================================================================
+QUICK ORDER TO DO THINGS:
+  1. SECTION 1 (get latest code) + deploy website.
+  2. SECTION 2 (publish rules)  -> contact support now works.
+  3. Test everything in Expo Go.
+  4. When happy: enroll in Apple ($99/yr) and Google ($25), then work
+     SECTION 3 and SECTION 4.
+===========================================================================

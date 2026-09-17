@@ -1,0 +1,224 @@
+/* ===========================================================================
+   King Cake Finder — website styles
+   Warm Louisiana / Mardi Gras palette (purple, green, gold) used as accents
+   over cream + ink neutrals. Mobile-first, scales up to desktop.
+   =========================================================================== */
+
+:root {
+  --purple: #5B3A8C;
+  --purple-soft: #EFE8F6;
+  --purple-deep: #452B6E;
+  --green: #2E7D4F;
+  --green-soft: #E4F1E9;
+  --gold: #C99A2E;
+  --gold-soft: #FBF1D8;
+
+  --bg: #FBF7F0;
+  --surface: #FFFFFF;
+  --ink: #2A2333;
+  --muted: #6E6578;
+  --faint: #9A93A3;
+  --border: #ECE4D7;
+  --divider: #F1EBE0;
+  --input-bg: #F7F2EA;
+  --danger: #B3261E;
+  --danger-soft: #F9E4E2;
+
+  --radius-sm: 8px;
+  --radius: 14px;
+  --radius-lg: 20px;
+  --shadow: 0 2px 10px rgba(42, 35, 51, 0.06);
+  --shadow-lg: 0 12px 40px rgba(42, 35, 51, 0.14);
+  --maxw: 1120px;
+
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+}
+a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+button { font-family: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid rgba(91, 58, 140, 0.4); outline-offset: 2px; border-radius: 4px; }
+
+/* ---- Layout ------------------------------------------------------------ */
+.container { width: 100%; max-width: var(--maxw); margin: 0 auto; padding: 0 20px; }
+.page { min-height: 60vh; padding: 28px 0 64px; }
+.stack { display: flex; flex-direction: column; }
+.row { display: flex; align-items: center; }
+.spacer { flex: 1; }
+.hide-mobile { display: none; }
+@media (min-width: 860px) { .hide-mobile { display: initial; } .hide-desktop { display: none; } }
+
+/* ---- Typography -------------------------------------------------------- */
+.h1 { font-size: 2rem; font-weight: 800; letter-spacing: -0.01em; margin: 0; }
+.h2 { font-size: 1.4rem; font-weight: 800; margin: 0; }
+.h3 { font-size: 1.1rem; font-weight: 700; margin: 0; }
+.eyebrow { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.muted { color: var(--muted); }
+.faint { color: var(--faint); }
+.small { font-size: 0.86rem; }
+.center { text-align: center; }
+@media (min-width: 720px) { .h1 { font-size: 2.6rem; } .h2 { font-size: 1.7rem; } }
+
+/* ---- Navbar ------------------------------------------------------------ */
+.navbar {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(251, 247, 240, 0.86);
+  backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.navbar-inner { display: flex; align-items: center; gap: 16px; height: 64px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.1rem; }
+.brand .logo { width: 34px; height: 34px; border-radius: 9px; }
+.nav-links { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.nav-link { padding: 8px 12px; border-radius: 999px; font-weight: 600; font-size: 0.92rem; color: var(--muted); }
+.nav-link:hover { background: var(--purple-soft); color: var(--purple); }
+.nav-link.active { color: var(--purple); }
+
+/* ---- Buttons ----------------------------------------------------------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border: none; border-radius: var(--radius); padding: 0 18px; height: 46px;
+  font-weight: 700; font-size: 0.95rem; transition: transform 0.05s, opacity 0.15s, background 0.15s;
+  background: var(--purple); color: #fff;
+}
+.btn:hover { opacity: 0.94; }
+.btn:active { transform: scale(0.985); }
+.btn:disabled { opacity: 0.55; cursor: default; }
+.btn.sm { height: 38px; padding: 0 14px; font-size: 0.88rem; }
+.btn.lg { height: 54px; padding: 0 26px; font-size: 1.05rem; }
+.btn.block { display: flex; width: 100%; }
+.btn.secondary { background: var(--purple-soft); color: var(--purple); }
+.btn.ghost { background: transparent; color: var(--purple); border: 1.5px solid var(--border); }
+.btn.green { background: var(--green); }
+.btn.danger { background: var(--danger); }
+.btn.dark { background: var(--ink); }
+
+/* ---- Cards ------------------------------------------------------------- */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow);
+}
+.card.tap { cursor: pointer; transition: transform 0.08s, box-shadow 0.15s; }
+.card.tap:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.sponsored-card { border-color: var(--gold); box-shadow: 0 2px 14px rgba(201, 154, 46, 0.18); }
+
+/* ---- Forms ------------------------------------------------------------- */
+.field { margin-bottom: 16px; }
+.label { display: block; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.input, .textarea, .select {
+  width: 100%; border: 1.5px solid var(--border); background: var(--input-bg);
+  border-radius: var(--radius); padding: 12px 14px; font-size: 1rem; color: var(--ink);
+  font-family: inherit; transition: border-color 0.15s;
+}
+.input:focus, .textarea:focus, .select:focus { outline: none; border-color: var(--purple); }
+.textarea { min-height: 110px; resize: vertical; }
+.field-error { color: var(--danger); font-size: 0.82rem; margin-top: 5px; }
+
+/* ---- King cake rating -------------------------------------------------- */
+.kc-rating { display: inline-flex; align-items: center; gap: 3px; }
+.kc-rating .cake { display: inline-block; }
+.kc-rating .val { margin-left: 8px; font-weight: 700; font-size: 0.85rem; color: var(--muted); }
+.kc-rating .cnt { color: var(--faint); font-weight: 600; }
+.kc-rating.interactive .cake { cursor: pointer; transition: transform 0.06s; }
+.kc-rating.interactive .cake:hover { transform: scale(1.12); }
+
+/* ---- Badges / chips ---------------------------------------------------- */
+.badge { display: inline-flex; align-items: center; gap: 5px; font-size: 0.74rem; font-weight: 700; padding: 4px 9px; border-radius: 999px; }
+.badge.ship { background: var(--green-soft); color: var(--green); }
+.badge.type { background: var(--purple-soft); color: var(--purple); }
+.badge.gold { background: var(--gold-soft); color: var(--gold); }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 999px;
+  border: 1.5px solid var(--border); background: var(--surface); font-weight: 600; font-size: 0.88rem;
+  color: var(--muted); cursor: pointer; transition: all 0.12s;
+}
+.chip:hover { border-color: var(--purple); color: var(--purple); }
+.chip.active { background: var(--purple); border-color: var(--purple); color: #fff; }
+
+/* ---- Bakery card / list ------------------------------------------------ */
+.results { display: grid; grid-template-columns: 1fr; gap: 14px; }
+@media (min-width: 720px) { .results { grid-template-columns: 1fr 1fr; } }
+.bakery-card .top { display: flex; align-items: flex-start; gap: 10px; }
+.bakery-card .meta { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 12px; }
+.bakery-card .meta .m { display: inline-flex; align-items: center; gap: 5px; font-size: 0.85rem; font-weight: 600; color: var(--muted); }
+.fav-btn { background: none; border: none; padding: 4px; font-size: 1.4rem; line-height: 1; color: var(--faint); transition: transform 0.08s; }
+.fav-btn.active { color: var(--gold); }
+.fav-btn.taste.active { color: var(--purple); }
+.fav-btn:active { transform: scale(0.85); }
+
+/* ---- Hero -------------------------------------------------------------- */
+.hero { padding: 40px 0 20px; }
+.hero .dots { display: flex; gap: 6px; margin-top: 20px; }
+.hero .dots span { width: 11px; height: 11px; border-radius: 50%; }
+.searchbar { display: flex; gap: 10px; background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 8px 8px 8px 16px; box-shadow: var(--shadow); align-items: center; }
+.searchbar input { flex: 1; border: none; background: none; font-size: 1.05rem; outline: none; color: var(--ink); }
+
+/* ---- Pricing table ----------------------------------------------------- */
+.price-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 4px; border-bottom: 1px solid var(--divider); }
+.price-row:last-child { border-bottom: none; }
+.price-row .p { font-weight: 700; color: var(--purple); }
+
+/* ---- Reviews ----------------------------------------------------------- */
+.review { padding: 16px 0; border-bottom: 1px solid var(--divider); }
+.review .rhead { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--purple-soft); color: var(--purple); display: grid; place-items: center; font-weight: 800; }
+.counter { text-align: right; font-size: 0.78rem; color: var(--faint); }
+
+/* ---- Modal / popup ----------------------------------------------------- */
+.overlay { position: fixed; inset: 0; background: rgba(24, 21, 33, 0.5); display: grid; place-items: center; padding: 20px; z-index: 100; animation: fade 0.15s ease; }
+.modal { background: var(--surface); border-radius: var(--radius-lg); padding: 26px; width: 100%; max-width: 440px; box-shadow: var(--shadow-lg); position: relative; }
+.modal .x { position: absolute; top: 14px; right: 14px; background: none; border: none; font-size: 1.4rem; color: var(--muted); line-height: 1; }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---- Cookie banner ----------------------------------------------------- */
+.cookie {
+  position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 90; max-width: 720px; margin: 0 auto;
+  background: var(--ink); color: #F3EEF7; border-radius: var(--radius-lg); padding: 16px 18px;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 12px; box-shadow: var(--shadow-lg);
+}
+.cookie .txt { flex: 1; min-width: 220px; font-size: 0.88rem; }
+.cookie a { text-decoration: underline; }
+
+/* ---- Ad slot ----------------------------------------------------------- */
+.ad-slot { margin: 20px 0; text-align: center; overflow: hidden; }
+.ad-slot .ad-label { font-size: 0.64rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--faint); margin-bottom: 4px; }
+.ad-placeholder {
+  border: 1px dashed var(--border); border-radius: var(--radius); background: var(--input-bg);
+  color: var(--faint); padding: 22px; font-size: 0.85rem;
+}
+
+/* ---- Empty / loading --------------------------------------------------- */
+.empty { text-align: center; padding: 56px 20px; }
+.empty .icon { font-size: 2.6rem; }
+.empty h3 { margin: 14px 0 6px; }
+.spinner { width: 34px; height: 34px; border: 3px solid var(--purple-soft); border-top-color: var(--purple); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 40px auto; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---- Layout with sidebar (search page desktop) ------------------------- */
+.with-aside { display: grid; grid-template-columns: 1fr; gap: 24px; }
+@media (min-width: 980px) { .with-aside { grid-template-columns: 1fr 300px; } }
+.aside { display: none; }
+@media (min-width: 980px) { .aside { display: block; } }
+
+/* ---- Footer ------------------------------------------------------------ */
+.footer { border-top: 1px solid var(--border); background: var(--surface); padding: 32px 0; margin-top: 40px; }
+.footer .cols { display: flex; flex-wrap: wrap; gap: 24px 48px; align-items: flex-start; }
+.footer a { color: var(--muted); font-size: 0.9rem; display: block; padding: 4px 0; }
+.footer a:hover { color: var(--purple); }
+
+/* ---- Utility ----------------------------------------------------------- */
+.mt-1 { margin-top: 8px; } .mt-2 { margin-top: 16px; } .mt-3 { margin-top: 24px; } .mt-4 { margin-top: 32px; }
+.mb-2 { margin-bottom: 16px; } .mb-3 { margin-bottom: 24px; }
+.gap-2 { gap: 16px; } .gap-1 { gap: 8px; }
+.wrap { flex-wrap: wrap; }
+.link { color: var(--purple); font-weight: 700; }
+.divider-line { height: 1px; background: var(--divider); margin: 20px 0; }
